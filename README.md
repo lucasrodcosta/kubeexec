@@ -22,6 +22,11 @@ Example:
 
 ## Installation
 
+Just download the [kubeexec.rb](https://raw.githubusercontent.com/lucasrodcosta/kubeexec/master/kubeexec.rb) file (or
+any of the releases) and you're good to go.
+
+#### Homebrew
+
     $ brew tap lucasrodcosta/kubeexec && brew install kubeexec
 
 ## Usage
