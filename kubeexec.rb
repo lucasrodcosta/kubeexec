@@ -3,7 +3,8 @@
 require 'optparse'
 require 'yaml'
 
-ITERMOCIL_NAME = "kubeexec"
+ITERMOCIL_CONFIG_PATH = "#{Dir.home}/.itermocil"
+ITERMOCIL_PROFILE_NAME = "_kubeexec"
 
 def get_pods(search_term)
   cmd = "kubectl get pods | grep ^#{search_term} | awk '{print $1}' | xargs"
@@ -21,7 +22,7 @@ def get_itermocil_yaml_config(pods, command_to_execute, container)
   {
     'windows' => [
       {
-        'name' => ITERMOCIL_NAME,
+        'name' => ITERMOCIL_PROFILE_NAME,
         'layout' => 'tiled',
         'panes' => panes_config
       }
@@ -30,9 +31,10 @@ def get_itermocil_yaml_config(pods, command_to_execute, container)
 end
 
 def execute_itermocil(config)
-  filename = File.expand_path("~/.itermocil/#{ITERMOCIL_NAME}.yml")
+  Dir.mkdir(ITERMOCIL_CONFIG_PATH) unless Dir.exists?(ITERMOCIL_CONFIG_PATH)
+  filename = "#{ITERMOCIL_CONFIG_PATH}/#{ITERMOCIL_PROFILE_NAME}.yml"
   File.write(filename, config)
-  `itermocil #{ITERMOCIL_NAME}`
+  `itermocil #{ITERMOCIL_PROFILE_NAME}`
   File.delete(filename)
 end
 
