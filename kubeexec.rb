@@ -6,15 +6,18 @@ require 'yaml'
 ITERMOCIL_CONFIG_PATH = "#{Dir.home}/.itermocil"
 ITERMOCIL_PROFILE_NAME = "_kubeexec"
 
-def get_pods(search_term)
-  cmd = "kubectl get pods | grep ^#{search_term} | awk '{print $1}' | xargs"
+def get_pods(search_term, namespace)
+  cmd = "kubectl get pods"
+  cmd << " -n #{namespace}" if namespace
+  cmd << " | grep ^#{search_term} | awk '{print $1}' | xargs"
   `#{cmd}`.split
 end
 
-def get_itermocil_yaml_config(pods, command_to_execute, container)
+def get_itermocil_yaml_config(pods, command_to_execute, container, namespace)
   panes_config = pods.map do |pod|
     cmd = "kubectl exec -it #{pod}"
     cmd << " -c #{container}" if container
+    cmd << " -n #{namespace}" if namespace
     cmd << " #{command_to_execute}"
     {'commands' => [cmd]}
   end
@@ -46,6 +49,10 @@ optparse = OptionParser.new do |opts|
     options[:container] = c
   end
 
+  opts.on("-n", "--namespace [String]", "The name of the namespace where the pod is.") do |n|
+    options[:namespace] = n
+  end
+
   opts.on("-s", "--show", "Shows the generated iTermocil configuration file, but doesn't execute it.") do |s|
     options[:show] = s
   end
@@ -66,8 +73,8 @@ unless search_term && command_to_execute
   exit 1
 end
 
-pods = get_pods(search_term)
-config = get_itermocil_yaml_config(pods, command_to_execute, options[:container])
+pods = get_pods(search_term, options[:namespace])
+config = get_itermocil_yaml_config(pods, command_to_execute, options[:container], options[:namespace])
 
 if options[:show]
   puts config
